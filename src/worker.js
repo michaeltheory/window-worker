@@ -84,6 +84,12 @@ onmessage = initMessage => {
     const exp = getScript(filename);
 
     function importScripts() {
+      let queue = [];
+      let storedOnMessage = global.onmessage;
+      self.onmessage = msg => {
+          queue.push(msg);
+      };
+
       for (let i = 0; i < arguments.length; i++) {
         const importScriptPath = arguments[i];
         const filename = _normalizeUrl(importScriptPath);
@@ -93,6 +99,9 @@ onmessage = initMessage => {
           filename: /^https?:/.test(filename) ? filename : 'data-url://',
         });
       }
+
+      self.onmessage = storedOnMessage;
+      queue.forEach(m => storedOnMessage(m));
     }
 
     const self = {
